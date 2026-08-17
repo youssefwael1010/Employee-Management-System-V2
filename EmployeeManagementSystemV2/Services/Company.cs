@@ -271,8 +271,93 @@ namespace EmployeeManagementSystem.Services
             };
         }
 
+        public Dictionary<string, int> GetDepartmentReport()
+        {
+            if (departments.Count == 0)
+                throw new InvalidOperationException("No departments found.");
+
+            Dictionary<string, int> report = new();
+
+            foreach (KeyValuePair<int, Department> pair in departments)
+            {
+                int employeeCount = 0;
+                foreach (Employee employee in employees)
+                {
+                    if (employee.DepartmentId == pair.Key)
+                    {
+                        employeeCount++;
+                    }
+                }
+                report.Add(pair.Value.Name, employeeCount);
+            }
+            return report;
+        }
+        public Stack<string> GetActionHistory()
+        {
+            return actionHistory;
+        }
+        public decimal CalculateAverageSalary()
+        {
+
+            decimal totalSalary = 0;
+
+            foreach (var employee in employees)
+                totalSalary += employee.Salary;
+
+            return totalSalary / employees.Count;
+        }
+        public List<Employee> GetEmployeesByDepartment(int departmentId)
+        {
+            Department? department = FindDepartmentById(departmentId);
+
+            if (department is null)
+                throw new InvalidOperationException($"Department with Id {departmentId} was not found.");
+
+            List<Employee> empsDepartment = new();
+
+            foreach (var employee in employees)
+            {
+                if (employee.DepartmentId == departmentId)
+                    empsDepartment.Add(employee);
+
+            }
+
+            return empsDepartment;
+        }
+
+        public List<Employee> GetEmployees()
+        {
+            List<Employee> result = new();
+
+            foreach (Employee employee in employees)
+                result.Add(employee);
+
+            return result;
+        }
+
+        public void SeedData()
+        {
+            AddDepartment(new Department { Name = "IT", Id = 1 });
+            AddDepartment(new Department { Name = "HR", Id = 2 });
+            AddDepartment(new Department { Name = "Finance", Id = 3 });
+
+            AddEmployeeToOnboarding(new Employee { Id = 1, Name = "Ahmed", HireDate = DateTime.Now, DepartmentId = 1, Salary = 15000 });
+            AddEmployeeToOnboarding(new Employee { Id = 2, Name = "Ali", HireDate = DateTime.Now, DepartmentId = 2, Salary = 7000 });
+            AddEmployeeToOnboarding(new Employee { Id = 3, Name = "Sara", HireDate = DateTime.Now, DepartmentId = 1, Salary = 15000 });
+
+            //ProcessNextOnboarding();
+            //ProcessNextOnboarding();
+            //ProcessNextOnboarding();
+
+            //AddSkillToEmployee(1, "C#");
+            //AddSkillToEmployee(1, ".NET");
+            //AddSkillToEmployee(2, "Excel");
+            //AddSkillToEmployee(3, "SQL");
+        }
+
+
     }
 
-    
+
 
 }

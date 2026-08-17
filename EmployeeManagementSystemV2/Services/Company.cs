@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using  EmployeeManagementSystem.Models;
 using  EmployeeManagementSystem.Common;
 using EmployeeManagementSystem.Delegates;
+using EmployeeManagementSystem.Events;
 
 namespace EmployeeManagementSystem.Services
 {
@@ -23,6 +24,9 @@ namespace EmployeeManagementSystem.Services
 
         private readonly HashSet<string> companySkills = new();
 
+        public event EventHandler<EmployeeEventArgs>? EmployeeOnBoarded;
+
+        public event EventHandler<EmployeeEventArgs>? EmployeePromoted
 
         // helper methods
         public Employee? FindEmployeeById(int id)
@@ -173,7 +177,10 @@ namespace EmployeeManagementSystem.Services
 
             employees.Add(employee);
 
-
+            if (EmployeeOnBoarded is not null)
+            {
+                EmployeeOnBoarded(this, new EmployeeEventArgs(employee));
+            }
 
 
             actionHistory.Push($"Employee activated: {employee.Name}");
@@ -221,6 +228,47 @@ namespace EmployeeManagementSystem.Services
             }
             return result;
 
+        }
+
+        public Result<Manager> PromoteToManager(int employeeId)
+        {
+
+            Employee? employee = FindEmployeeById(employeeId);
+
+            if (employee is null)
+                return new Result<Manager>
+                {
+                    Success = false,
+                    Message = "Employee not found.",
+                    Data = null
+                };
+
+            var manager = new Manager
+            {
+                Id = employeeId,
+                Name = employee.Name,
+                HireDate = employee.HireDate,
+                DepartmentId = employee.DepartmentId,
+                Salary = employee.Salary,
+                Skills = employee.Skills
+            };
+
+            int index = employees.IndexOf(employee);
+
+            employees[index] = manager;
+
+            actionHistory.Push($"Employee promoted: {manager.Name}");
+
+            if (EmployeePromoted is not null)
+                EmployeePromoted(this, new EmployeeEventArgs(manager));
+
+
+            return new Result<Manager>
+            {
+                Success = true,
+                Message = "Employee Promoted Successfully",
+                Data = manager
+            };
         }
 
     }

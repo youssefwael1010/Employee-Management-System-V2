@@ -156,7 +156,56 @@ namespace EmployeeManagementSystem.Services
 
         }
 
+        public Result<Employee> ProcessNextOnboarding()
+        {
+            if (onboardingQueue.Count == 0)
+                //throw new InvalidOperationException("No employees waiting for onboarding.");
+                return new Result<Employee>
+                {
+                    Success = false,
+                    Message = "No employees waiting for onboarding.",
+                    Data = null
+                };
+            Employee employee = onboardingQueue.Dequeue();
 
+
+
+            employees.Add(employee);
+
+
+
+
+            actionHistory.Push($"Employee activated: {employee.Name}");
+            return new Result<Employee>
+            {
+                Success = true,
+                Message = "Employee OnBoarded Successfully.",
+                Data = employee
+            };
+        }
+        public void AddSkillToEmployee(int employeeId, string skill)
+        {
+            if (string.IsNullOrWhiteSpace(skill))
+                throw new ArgumentException("Skill name is required.");
+
+            Employee? employee = FindEmployeeById(employeeId);
+
+            if (employee is null)
+                throw new InvalidOperationException($"Employee with Id {employeeId} was not found.");
+
+            string normalizedSkill = skill.Trim();
+
+            if (!employee.Skills.Contains(normalizedSkill))
+                employee.Skills.Add(normalizedSkill);
+
+            companySkills.Add(normalizedSkill);
+            actionHistory.Push($"Added skill {normalizedSkill} to {employee.Name}");
+
+        }
+        public HashSet<string> GetCompanySkills()
+        {
+            return companySkills;
+        }
 
     }
 

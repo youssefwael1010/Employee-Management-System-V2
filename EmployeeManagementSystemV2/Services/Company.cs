@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using  EmployeeManagementSystem.Models;
 using  EmployeeManagementSystem.Common;
+using EmployeeManagementSystem.Delegates;
 
 namespace EmployeeManagementSystem.Services
 {
@@ -205,6 +206,21 @@ namespace EmployeeManagementSystem.Services
         public HashSet<string> GetCompanySkills()
         {
             return companySkills;
+        }
+
+        public List<Employee> FilterEmployees(EmployeeFilter filter)
+        {
+
+            List<Employee> result = new();
+            foreach (var employee in employees)
+            {
+                if (filter(employee))
+                {
+                    result.Add(employee);
+                }
+            }
+            return result;
+
         }
 
     }

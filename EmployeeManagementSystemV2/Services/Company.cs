@@ -22,6 +22,142 @@ namespace EmployeeManagementSystem.Services
 
         private readonly HashSet<string> companySkills = new();
 
+
+        // helper methods
+        public Employee? FindEmployeeById(int id)
+        {
+            foreach (Employee employee in employees)
+            {
+                if (employee.Id == id)
+                    return employee;
+            }
+            return null;
+        }
+        public Employee? FindEmployeeByName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+
+            foreach (Employee employee in employees)
+            {
+                if (employee.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    return employee;
+            }
+
+            return null;
+        }
+        private Department? FindDepartmentById(int id)
+        {
+            if (departments.TryGetValue(id, out Department? department))
+                return department;
+
+            return null;
+        }
+
+        //
+        //
+
+        public Result<Employee> AddEmployeeToOnboarding(Employee employee)
+        {
+            if (employee is null)
+                return new Result<Employee>
+                {
+                    Success = false,
+                    Message = "Employee not found.",
+                    Data = null
+                };
+
+            if (string.IsNullOrWhiteSpace(employee.Name))
+                return new Result<Employee>
+                {
+                    Success = false,
+                    Message = "Employee name is required.",
+                    Data = null
+                };
+            //throw new Exception("Employee name is required.");
+
+            if (employee.Salary < 0)
+                return new Result<Employee>
+                {
+                    Success = false,
+                    Message = "Salary cannot be negative.",
+                    Data = null
+                };
+            //throw new Exception("Salary cannot be negative.");
+
+            if (!departments.ContainsKey(employee.DepartmentId))
+                return new Result<Employee>
+                {
+                    Success = false,
+                    Message = $"Department Id {employee.DepartmentId} does not exist.",
+                    Data = null
+                };
+            //throw new InvalidOperationException($"Department Id {employee.DepartmentId} does not exist.");
+
+            if (FindEmployeeById(employee.Id) is not null)
+                return new Result<Employee>
+                {
+                    Success = false,
+                    Message = $"Employee Id {employee.Id} already exists.",
+                    Data = null
+                };
+            //throw new InvalidOperationException($"Employee Id {employee.Id} already exists.");
+
+
+            onboardingQueue.Enqueue(employee);
+            actionHistory.Push($"Employee added to onboarding: {employee.Name}");
+
+            return new Result<Employee>
+            {
+                Success = true,
+                Message = "Employee added Successfully",
+                Data = employee
+            };
+
+        }
+        public Result<Department> AddDepartment(Department department)
+        {
+            if (department is null)
+                //throw new ArgumentNullException(nameof(department));
+                return new Result<Department>
+                {
+                    Success = false,
+                    Message = $"{nameof(department)} is required."
+                };
+
+            if (string.IsNullOrWhiteSpace(department.Name))
+                //throw new Exception("Department name is required.");
+                return new Result<Department>
+                {
+                    Success = false,
+                    Message = "Department name is required.",
+                    Data = null
+                };
+
+            if (departments.ContainsKey(department.Id))
+                //throw new InvalidOperationException($"Department Id {department.Id} already exists.");
+                return new Result<Department>
+                {
+                    Success = false,
+                    Message = $"Department Id {department.Id} already exists.",
+                    Data = null
+                };
+
+            departments.Add(department.Id, department);
+
+            actionHistory.Push($"Added department: {department.Name}");
+
+            return new Result<Department>
+            {
+                Success = true,
+                Message = "Department added Successfully.",
+                Data = department
+            };
+
+        }
+
+
+
     }
 
     

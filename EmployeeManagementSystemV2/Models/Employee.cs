@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +19,8 @@ namespace EmployeeManagementSystem.Models
 
         public virtual string GetInfo()
         {
-            return $"Employee | ID:{Id} | {Name} | Salary:{Salary} | Department ID :{DepartmentId}";
+            return  $"Employee | ID:{Id} | {Name} | " +
+               $"Salary:{Salary} | Department ID:{DepartmentId}";
         }
 
     }

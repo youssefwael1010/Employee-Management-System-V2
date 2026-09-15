@@ -1,12 +1,14 @@
-﻿using EmployeeManagementSystem.Events;
-using EmployeeManagementSystem.Models;
+using System.Collections.Generic;
 using EmployeeManagementSystem.Services;
+using EmployeeManagementSystem.Models;
+using EmployeeManagementSystem.Delegates;
+using EmployeeManagementSystem.Events;
 
-namespace EmployeeManagementSystemV2
+
+namespace EmployeeManagementSystem
 {
     public class Program
     {
-
         public static void Main(string[] args)
         {
             Company company = new Company();
@@ -57,7 +59,7 @@ namespace EmployeeManagementSystemV2
                                 break;
                             }
 
-                            var result = company.AddEmployeeToOnboarding(new Employee { Salary = empSalary, Name = empName!, DepartmentId = empDeptId });
+                            var result=company.AddEmployeeToOnboarding(new Employee { Salary= empSalary,Name = empName!, DepartmentId= empDeptId });
                             if (result.Success)
                                 Console.WriteLine(result.Message);
                             else
@@ -70,7 +72,7 @@ namespace EmployeeManagementSystemV2
                             Console.Write("Name: ");
                             string deptname = Console.ReadLine()!;
 
-                            var depResult = company.AddDepartment(new Department { Name = deptname! });
+                            var depResult=company.AddDepartment(new Department { Name= deptname! });
                             if (depResult.Success)
                                 Console.WriteLine(depResult.Message);
                             else
@@ -95,7 +97,7 @@ namespace EmployeeManagementSystemV2
 
                         case 4:
 
-                            var boardRes = company.ProcessNextOnboarding();
+                            var boardRes= company.ProcessNextOnboarding();
                             if (boardRes.Success)
                                 Console.WriteLine(boardRes.Message);
                             else
@@ -121,14 +123,36 @@ namespace EmployeeManagementSystemV2
 
                         case 6:
                             Console.WriteLine("Managers");
-                            var managers = company.FilterEmployees(e => e is Manager);
+                            var managers = company.FilterEmployees(e=> e is Manager);
 
-                            Console.WriteLine(managers);
+                            if (managers.Count == 0)
+                            {
+                                Console.WriteLine("No managers found.");
+                            }
+                            else
+                            {
+                                foreach (Employee emp in managers)
+                                {
+                                    Console.WriteLine(emp.GetInfo());
+                                }
+                            }
+
+                            
                             Console.WriteLine("------------------------------------------------------------");
                             Console.WriteLine("Employees with Salary > 10000");
-                            var highSalary = company.FilterEmployees(e => e.Salary > 10000m);
+                            var highSalaryEmployees = company.FilterEmployees(e => e.Salary > 10000m);
 
-                            Console.WriteLine(highSalary);
+                            if (highSalaryEmployees.Count == 0)
+                            {
+                                Console.WriteLine("No employees found.");
+                            }
+                            else
+                            {
+                                foreach (Employee emp in highSalaryEmployees)
+                                {
+                                    Console.WriteLine(emp.GetInfo());
+                                }
+                            }
 
                             break;
 
@@ -141,7 +165,7 @@ namespace EmployeeManagementSystemV2
                                 break;
                             }
 
-                            var promoRes = company.PromoteToManager(empID);
+                            var promoRes=company.PromoteToManager(empID);
                             if (promoRes.Success)
                                 Console.WriteLine(promoRes.Message);
                             else
@@ -162,7 +186,7 @@ namespace EmployeeManagementSystemV2
                                 foreach (var Skill in Skills)
                                     Console.WriteLine(Skill);
                             }
-                            break;
+                                break;
 
                         case 9:
 
@@ -173,7 +197,7 @@ namespace EmployeeManagementSystemV2
                                 Console.WriteLine("Invalid option.");
                                 break;
                             }
-                            Employee? employee = null;
+                            Employee? employee=null;
                             if (option == 1)
                             {
                                 Console.Write("Employee ID: ");
@@ -184,7 +208,7 @@ namespace EmployeeManagementSystemV2
                                     break;
                                 }
 
-                                employee = company.FindEmployeeById(id);
+                                employee =company.FindEmployeeById(id);
                                 Console.WriteLine(employee?.GetInfo());
                             }
                             else if (option == 2)
@@ -193,7 +217,7 @@ namespace EmployeeManagementSystemV2
 
                                 string name = Console.ReadLine()!;
 
-                                employee = company.FindEmployeeByName(name);
+                                employee=company.FindEmployeeByName(name);
                                 Console.WriteLine(employee?.GetInfo());
                             }
                             else
@@ -204,7 +228,7 @@ namespace EmployeeManagementSystemV2
 
                         case 10:
 
-                            var report = company.GetDepartmentReport();
+                            var report= company.GetDepartmentReport();
 
                             Console.WriteLine("Department Report:");
 
@@ -225,6 +249,58 @@ namespace EmployeeManagementSystemV2
 
                         case 12:
 
+                            Console.Write("Employee ID: ");
+
+                            if (!int.TryParse(Console.ReadLine(), out int employeeId))
+                            {
+                                Console.WriteLine("Invalid Employee ID.");
+                                break;
+                            }
+
+                            Console.Write("Manager ID: ");
+
+                            if (!int.TryParse(Console.ReadLine(), out int managerId))
+                            {
+                                Console.WriteLine("Invalid Manager ID.");
+                                break;
+                            }
+
+                            var assignResult =
+                                company.AssignEmployeeToManager(employeeId, managerId);
+
+                            Console.WriteLine(assignResult.Message);
+
+                            break;
+
+                        case 13:
+
+                            Console.Write("Manager ID: ");
+
+                            if (!int.TryParse(Console.ReadLine(), out int mngId))
+                            {
+                                Console.WriteLine("Invalid Manager ID.");
+                                break;
+                            }
+
+                            var team = company.GetManagerTeam(mngId);
+
+                            if (team.Count == 0)
+                            {
+                                Console.WriteLine("No team members found.");
+                                break;
+                            }
+
+                            Console.WriteLine("Team Members:");
+
+                            foreach (Employee emp in team)
+                            {
+                                Console.WriteLine(emp.GetInfo());
+                            }
+
+                            break;
+
+                        case 14:
+
                             Console.Write("Department id: ");
                             if (!int.TryParse(Console.ReadLine(), out int deptId))
                             {
@@ -237,12 +313,12 @@ namespace EmployeeManagementSystemV2
                                 Console.WriteLine(employee1.GetInfo());
                             break;
 
-                        case 13:
+                        case 15:
 
                             Console.Write("Average Salary = ");
                             var avgSalary = company.CalculateAverageSalary();
-
-                            Console.WriteLine(avgSalary);
+                           
+                             Console.WriteLine(avgSalary);
                             break;
 
                         case 0:
@@ -285,23 +361,27 @@ namespace EmployeeManagementSystemV2
             Console.WriteLine("====================================");
             Console.WriteLine("      Employee Management System");
             Console.WriteLine("====================================");
-            Console.WriteLine("1.  Add Employee");
-            Console.WriteLine("2.  Add Department");
-            Console.WriteLine("3.  Show Employees");
+            Console.WriteLine("1.  Add Employee"); 
+            Console.WriteLine("2.  Add Department"); 
+            Console.WriteLine("3.  Show Employees"); 
             Console.WriteLine("4.  Process Onboarding");
             Console.WriteLine("5.  Add Skill");
             Console.WriteLine("6.  Filter Employees");
             Console.WriteLine("7.  Promote Employee");
             Console.WriteLine("8.  Company Skills");
-            Console.WriteLine("9.  Search Employee");
+            Console.WriteLine("9.  Search Employee"); 
             Console.WriteLine("10. Department Report");
             Console.WriteLine("11. Action History");
-            Console.WriteLine("12. Show Department Employees");
-            Console.WriteLine("13. Average Salary");
+            Console.WriteLine("12. Assign Employee To Manager");
+            Console.WriteLine("13. Show Manager Team");
+            Console.WriteLine("14. Show Department Employees");
+            Console.WriteLine("15. Average Salary");
             Console.WriteLine("0.  Exit");
             Console.WriteLine();
             Console.Write("Choose: ");
         }
 
-    }
+}
+
+
 }
